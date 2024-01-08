@@ -8,6 +8,7 @@ import keyboard
 import os 
 from datetime import datetime
 import schedule
+import threading
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
@@ -358,10 +359,14 @@ def predict(cfg):
     
 
 def save_csv():
-    # Save the CSV files
-    export_to_csv(object_counter1, 'Entering.csv')
-    export_to_csv(object_counter, 'Leaving.csv')
+    while running:
+        # Save the CSV files
+        export_to_csv(object_counter1, 'Entering.csv')
+        export_to_csv(object_counter, 'Leaving.csv')
+        time.sleep(10)  
 
+save_csv_thread = threading.Thread(target=save_csv)
+save_csv_thread.start()
 # Schedule the save_csv function to run every 10 seconds
 
 if __name__ == "__main__":
@@ -373,14 +378,16 @@ if __name__ == "__main__":
         # Your existing code
 
         # Check if it's time to save the CSV files
-        current_time = time.time()
-        if current_time - initial_time >= 10:
-            save_csv()
-            initial_time = current_time
+        # current_time = time.time()
+        # if current_time - initial_time >= 10:
+        #     save_csv()
+        #     initial_time = current_time
 
         # Run any other existing code within the loop
         if keyboard.is_pressed('q'):
             running = False
         # Sleep to avoid high CPU usage
         time.sleep(1)
+    
+    save_csv_thread.join()
 
